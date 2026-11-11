@@ -1,40 +1,48 @@
-# StudentHub
-Arabic RTL WPF desktop application for students, subjects, attendance and grades. A small university project with a modern navy/white interface, local SQLite storage and a simple MVVM design.
+# StudentHub — نظام إدارة الطلاب
 
-## Run on Windows
-1. Install **Visual Studio 2026** with the **.NET desktop development** workload and **.NET 10 LTS SDK**. Visual Studio 2022 does not support targeting .NET 10.
-2. Open `StudentHub.sln`, allow NuGet restore, set `StudentHub` as startup project and press F5.
-3. The database and sample records are created automatically on first launch in `%LocalAppData%\StudentHub\studenthub.db`. No database server or runtime internet connection is required.
+[English documentation](README_EN.md)
+تطبيق جامعي محلي باستخدام C# وWPF وXAML و.NET 10 LTS وSQLite وEntity Framework Core، مع MVVM مبسط عبر CommunityToolkit.Mvvm.
 
-## Features
-- Dashboard totals, present/absent counts, mean of all recorded grades, latest five students.
-- Student CRUD with name/student-number search and validation. Email and phone are optional.
-- Subject CRUD with code/name and 1–6 credit hours.
-- Attendance CRUD, date-only normalization, unique student/subject/day.
-- Grade CRUD, 0–100 validation, one result per student/subject. Select a grade row to see that student's arithmetic mean (unweighted).
-- CSV export of all results with UTF-8 BOM for Arabic Excel, quoted cells and formula protection.
-- Confirmation before deletion. Deleting a student or subject deletes its linked attendance and grades; the dialog explicitly warns about this.
+## التشغيل
+1. استخدم Windows وVisual Studio 2026 مع حزمة **.NET desktop development** وSDK .NET 10. الإصدار Visual Studio 2022 لا يدعم استهداف .NET 10.
+2. افتح `StudentHub.sln` وانتظر استعادة NuGet.
+3. اجعل مشروع `StudentHub` مشروع بدء التشغيل ثم اضغط F5.
+4. تنشأ قاعدة البيانات تلقائيًا داخل `%LocalAppData%\StudentHub\studenthub.db` مع بيانات خيالية أولية. لا تحتاج خادمًا أو اشتراكًا أو إنترنت أثناء الاستخدام.
 
-## Design and explanation
-`Models` defines four entities. `Data` configures EF Core relationships, unique indexes, SQLite checks and initial seed. `Services/StudentHubService.cs` contains validation and database operations, using a short-lived context per operation. `ViewModels/MainViewModel.cs` exposes observable state and Toolkit commands; views bind to it. `EditorWindow` builds a small form for each entity and delegates persistence to the service; its code-behind handles only form input/dialog behavior. Detached copies make Cancel safe. A second lightweight console project links the actual model/data/service source so integration checks can run without WPF on Linux.
+## طريقة الاستخدام
+- لوحة التحكم تعرض أعداد الطلاب والمواد والحضور والحاضر والغائب ومتوسط جميع الدرجات وأحدث خمسة طلاب.
+- الطلاب: إضافة وتعديل وحذف؛ البحث بالاسم أو الرقم الجامعي. البريد والهاتف اختياريان. المستوى من 1 إلى 8.
+- المواد: رمز فريد واسم وساعات معتمدة من 1 إلى 6.
+- الحضور: اختر الطالب والمادة والتاريخ، وحدد حاضر أو أزل التحديد لتسجيل غائب. يمنع تكرار نفس الطالب والمادة واليوم. يمكن تعديل السجل وحذفه.
+- الدرجات: درجة من صفر إلى 100، سجل واحد لكل طالب ومادة. حدد صفًا لعرض متوسط الطالب الحسابي دون ترجيح بالساعات.
+- تصدير CSV يصدر جميع النتائج بترميز يدعم العربية في Excel. تختلف فواصل Excel وفق إعدادات الجهاز؛ يمكن الاستيراد من قائمة البيانات واختيار UTF-8 والفاصلة.
+- اختر صفًا قبل التعديل والحذف. إلغاء نافذة الإدخال لا يحفظ التغييرات.
+- حذف الطالب أو المادة يحذف سجلات الحضور والدرجات المرتبطة، ويظهر تحذير صريح قبل التنفيذ.
 
-Internal integer keys are separate from the visible university student number. Student numbers and subject codes are unique case-insensitively. Academic level is 1–8. Attendance allows historical or future dates. Blank grids represent empty results. All sample data is fictional.
+## شرح المشروع للأستاذ
+`Models`: تعريف الطلاب والمواد والحضور والدرجات. لكل سجل مفتاح داخلي مستقل عن الرقم الجامعي.
 
-## Build and verification
+`Data`: ربط الجداول، المفاتيح الأجنبية، قيود الدرجات والمستوى، والفهارس الفريدة. الرقم الجامعي ورمز المادة لا يتكرران حتى باختلاف حالة الأحرف الإنجليزية.
+
+`Services`: تنفيذ عمليات قاعدة البيانات والتحقق من المدخلات وتصدير CSV. تفتح كل عملية DbContext قصير العمر.
+
+`ViewModels`: حالة الواجهة والأوامر وعمليات تحديث البيانات عبر CommunityToolkit.Mvvm.
+
+`Views`: نافذة إدخال مشتركة تجمع المدخلات وتتحقق من تحويل الأرقام، ثم تفوض الحفظ إلى الخدمة. نافذة العرض الرئيسية تربط الصفحات بحالة ViewModel.
+
+`StudentHub.Tests`: مشروع Console صغير يختبر نفس ملفات البيانات والخدمات على SQLite حقيقي، دون الحاجة لتشغيل WPF.
+
+## البناء والاختبارات
 ```powershell
-dotnet restore StudentHub.sln
 dotnet build StudentHub.sln -c Release
 dotnet run --project StudentHub.Tests -c Release
 ```
-The checks use a temporary real SQLite file and cover CRUD, validation, duplicates, relationships, persistence, averages and CSV. This is an executable test harness: use `dotnet run`, not `dotnet test`.
+راجع `VALIDATION.md` للنتائج الفعلية وقائمة فحص الواجهة على Windows. بناء WPF على Linux لا يعني تشغيل الواجهة أو اختبار مظهرها. لا توجد صور افتراضية تدعي أنها لواجهة تعمل.
 
-See `VALIDATION.md` for actual results and the remaining Windows UI checklist. Cross-compiling WPF does not demonstrate successful GUI execution. No UI screenshots are supplied unless captured from the running Windows application.
+## حفظ البيانات والنسخ الاحتياطي
+تبقى البيانات بعد إغلاق البرنامج. تنشأ البيانات التجريبية عند إنشاء القاعدة فقط، ولا تعود إذا حذفتها. لإنشاء عرض تجريبي جديد: أغلق البرنامج، انسخ القاعدة احتياطيًا، ثم احذف ملف القاعدة وأعد التشغيل. للنسخ الاحتياطي أغلق جميع نسخ التطبيق وانسخ مجلد البيانات كاملًا.
 
-## Data lifecycle
-`EnsureCreated` is deliberately used for this fixed academic schema; there are no migrations. Seed data is inserted only when the database is first created, so deleting demo records does not recreate them on restart. For future schema changes, add a planned migration strategy. To reset the demo, close the application, back up the database, then remove its database file and reopen. For backup, close all StudentHub instances and copy the entire data directory. Do not commit personal student data or database files.
+يستخدم المشروع `EnsureCreated` لسهولة الشرح مع مخطط ثابت. عند تطوير مخطط الجداول مستقبلًا يجب وضع خطة ترحيل بيانات؛ لا تخلط EnsureCreated مع Migrations. قاعدة البيانات وملفات البناء مستبعدة من Git.
 
-## Publish (optional, Windows)
-```powershell
-dotnet publish StudentHub/StudentHub.csproj -c Release -r win-x64 --self-contained true -o artifacts/StudentHub
-```
-Distribute the entire output folder; keep the writable database in LocalAppData. Arabic interface text is intentional; the documentation is bilingual.
+## التسليم
+الملف الأساسي `StudentHub.sln` والمصادر وملفا الشرح مرفقة في المستودع. يلزم إكمال فحص النوافذ الفعلي على Windows قبل وصف المشروع بأنه مختبر بالكامل وجاهز للتسليم النهائي.
