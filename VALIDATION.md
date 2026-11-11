@@ -8,7 +8,7 @@
 - Updated EF Core and the native SQLite bundle after the initial dependency audit warning; final restore/build reports no warnings.
 
 ## Windows automated verification
-The repository includes `.github/workflows/windows-build.yml`, which builds the solution and runs the same database checks on `windows-latest`. The actual run status is available in the repository Actions tab. A successful build does not verify rendered WPF controls.
+The repository includes `.github/workflows/windows-build.yml`, which builds the solution and runs the same database checks on `windows-latest`. The first Windows run passed both the Release build and all integration checks: [successful Windows run](https://github.com/Aishaas1/StudentHub/actions/runs/43092017539), commit `d3e0ce9`. Later commits have their own runs in the Actions tab. A successful build does not verify rendered WPF controls.
 
 ## Required Windows interactive acceptance
 The supplied execution environment cannot run WPF. **The GUI has not been launched or visually verified here.** No running-application screenshots have been captured. Complete these checks before final university submission:
